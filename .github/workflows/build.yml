@@ -372,6 +372,22 @@ jobs:
           name: symbols-${{ matrix.rid }}-${{ env.FLAVOR }}
           path: ${{ env.RANVIER_WORK }}/out/${{ env.FLAVOR }}/symbols
 
+      - name: SCRATCH measure caret differences
+        if: env.FLAVOR == 'slim'
+        continue-on-error: true
+        shell: bash
+        run: |
+          python -I -X utf8 tests/abi/caret_hit.py --native-directory "${{ env.RANVIER_WORK }}/out/${{ env.FLAVOR }}/runtimes/${{ matrix.rid }}/native" --webkit-source "${{ env.RANVIER_WORK }}/src" --measure caret-measure-${{ matrix.rid }}.json
+          cat caret-measure-${{ matrix.rid }}.json
+
+      - name: SCRATCH upload caret measurement
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: caret-measure-${{ matrix.rid }}
+          path: caret-measure-${{ matrix.rid }}.json
+          if-no-files-found: warn
+
       - name: Check the staged files and paint a page
         # scripts/smoke.py, as a local build.py all runs it: the host loads from the staged package, and on macOS
         # no staged library names the build tree. On Linux, loading is untested and the step checks the manifest.
